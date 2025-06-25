@@ -1,10 +1,8 @@
-// Middleware para validar datos de registro
 const validateRegistrationData = (req, res, next) => {
     const { first_name, last_name, email, age, password } = req.body
   
     const errors = []
   
-    // Validaciones requeridas para registro
     if (!first_name || first_name.trim().length < 2) {
       errors.push("El nombre es requerido y debe tener al menos 2 caracteres")
     }
@@ -48,7 +46,6 @@ const validateRegistrationData = (req, res, next) => {
     next()
   }
   
-  // Middleware para validar datos de login
   const validateLoginData = (req, res, next) => {
     const { email, password } = req.body
   

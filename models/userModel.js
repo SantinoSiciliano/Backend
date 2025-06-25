@@ -7,27 +7,27 @@ class UserModel {
     this.collection = "users"
   }
 
-  // Crear un nuevo usuario
+  
   async createUser(userData) {
     const db = getDb()
 
-    // Validar datos requeridos
+    
     if (!userData.first_name || !userData.last_name || !userData.email || !userData.age || !userData.password) {
       throw new Error("Todos los campos son requeridos")
     }
 
-    // Validar formato de email
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(userData.email)) {
       throw new Error("Formato de email inválido")
     }
 
-    // Validar edad
+    
     if (userData.age < 1 || userData.age > 120) {
       throw new Error("La edad debe estar entre 1 y 120 años")
     }
 
-    // Encriptar la contraseña usando hashSync como pide la consigna
+    
     const hashedPassword = bcrypt.hashSync(userData.password, 10)
 
     const newUser = {
@@ -52,13 +52,13 @@ class UserModel {
     }
   }
 
-  // Buscar usuario por email
+  
   async findByEmail(email) {
     const db = getDb()
     return db.collection(this.collection).findOne({ email: email.toLowerCase().trim() })
   }
 
-  // Buscar usuario por ID
+  
   async findById(id) {
     const db = getDb()
     try {
@@ -71,7 +71,7 @@ class UserModel {
     }
   }
 
-  // Obtener todos los usuarios (sin contraseñas)
+  
   async findAll() {
     const db = getDb()
     return db
@@ -80,11 +80,9 @@ class UserModel {
       .toArray()
   }
 
-  // Actualizar usuario
   async updateUser(id, userData) {
     const db = getDb()
 
-    // Preparar datos para actualizar
     const updateData = {
       updatedAt: new Date(),
     }
@@ -120,7 +118,6 @@ class UserModel {
     }
   }
 
-  // Eliminar usuario
   async deleteUser(id) {
     const db = getDb()
     try {
@@ -134,7 +131,6 @@ class UserModel {
     }
   }
 
-  // Comparar contraseña
   async comparePassword(plainPassword, hashedPassword) {
     return bcrypt.compareSync(plainPassword, hashedPassword)
   }

@@ -3,7 +3,6 @@ const router = express.Router()
 const cartModel = require("../models/cartModel")
 const { authenticateJWT, requireOwnership } = require("../middlewares/auth")
 
-// Obtener carrito por ID de usuario
 router.get("/user/:userId", authenticateJWT, requireOwnership, async (req, res) => {
   try {
     const { userId } = req.params

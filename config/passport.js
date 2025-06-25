@@ -4,7 +4,6 @@ const JwtStrategy = require("passport-jwt").Strategy
 const ExtractJwt = require("passport-jwt").ExtractJwt
 const userModel = require("../models/userModel")
 
-// Estrategia Local para Login
 passport.use(
   "local",
   new LocalStrategy(
@@ -33,7 +32,6 @@ passport.use(
   ),
 )
 
-// Estrategia JWT para proteger rutas
 passport.use(
   "jwt",
   new JwtStrategy(

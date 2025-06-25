@@ -2,12 +2,12 @@ const userModel = require("../models/userModel")
 const cartModel = require("../models/cartModel")
 
 class UserController {
-  // Crear usuario (Registro)
+  
   async createUser(req, res) {
     try {
       const { first_name, last_name, email, age, password, role } = req.body
 
-      // Validaciones básicas
+      
       if (!first_name || !last_name || !email || !age || !password) {
         return res.status(400).json({
           status: "error",
@@ -15,7 +15,6 @@ class UserController {
         })
       }
 
-      // Verificar si el usuario ya existe
       const existingUser = await userModel.findByEmail(email)
       if (existingUser) {
         return res.status(400).json({
@@ -24,7 +23,6 @@ class UserController {
         })
       }
 
-      // Crear usuario
       const newUser = await userModel.createUser({
         first_name,
         last_name,
@@ -34,7 +32,6 @@ class UserController {
         role,
       })
 
-      // Crear carrito para el usuario
       const newCart = await cartModel.createCart(newUser._id)
 
       res.status(201).json({
@@ -60,7 +57,6 @@ class UserController {
     }
   }
 
-  // Obtener todos los usuarios
   async getUsers(req, res) {
     try {
       const users = await userModel.findAll()
@@ -79,7 +75,6 @@ class UserController {
     }
   }
 
-  // Obtener usuario por ID
   async getUserById(req, res) {
     try {
       const { id } = req.params
@@ -93,10 +88,9 @@ class UserController {
         })
       }
 
-      // Buscar carrito del usuario
+     
       const cart = await cartModel.findByUserId(id)
 
-      // Eliminar contraseña de la respuesta
       const { password, ...safeUser } = user
 
       res.json({
@@ -115,13 +109,11 @@ class UserController {
     }
   }
 
-  // Actualizar usuario
   async updateUser(req, res) {
     try {
       const { id } = req.params
       const { first_name, last_name, email, age } = req.body
 
-      // Verificar que el usuario existe
       const existingUser = await userModel.findById(id)
       if (!existingUser) {
         return res.status(404).json({
@@ -130,7 +122,7 @@ class UserController {
         })
       }
 
-      // Actualizar usuario
+      
       const updated = await userModel.updateUser(id, {
         first_name,
         last_name,
@@ -145,7 +137,7 @@ class UserController {
         })
       }
 
-      // Obtener usuario actualizado
+      
       const updatedUser = await userModel.findById(id)
       const { password, ...safeUser } = updatedUser
 
@@ -163,12 +155,12 @@ class UserController {
     }
   }
 
-  // Eliminar usuario
+  
   async deleteUser(req, res) {
     try {
       const { id } = req.params
 
-      // Verificar que el usuario existe
+      
       const user = await userModel.findById(id)
       if (!user) {
         return res.status(404).json({
@@ -177,13 +169,13 @@ class UserController {
         })
       }
 
-      // Eliminar carrito asociado
+      
       const cart = await cartModel.findByUserId(id)
       if (cart) {
         await cartModel.deleteCart(cart._id)
       }
 
-      // Eliminar usuario
+      
       const deleted = await userModel.deleteUser(id)
 
       if (!deleted) {

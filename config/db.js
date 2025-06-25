@@ -11,7 +11,6 @@ async function connectToDatabase() {
     console.log("✅ Conectado exitosamente a MongoDB Atlas")
     db = client.db("ecommerce")
 
-    // Crear índices para mejorar el rendimiento
     await db.collection("users").createIndex({ email: 1 }, { unique: true })
     console.log("✅ Índices creados correctamente")
 

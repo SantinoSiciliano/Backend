@@ -1,6 +1,6 @@
 const passport = require("passport")
 
-// Middleware para autenticar con JWT usando Passport
+
 const authenticateJWT = (req, res, next) => {
   passport.authenticate("jwt", { session: false }, (err, user, info) => {
     if (err) {
@@ -22,7 +22,7 @@ const authenticateJWT = (req, res, next) => {
   })(req, res, next)
 }
 
-// Middleware para verificar rol de administrador
+
 const requireAdmin = (req, res, next) => {
   try {
     if (!req.user) {
@@ -49,7 +49,7 @@ const requireAdmin = (req, res, next) => {
   }
 }
 
-// Middleware para verificar que el usuario solo acceda a sus propios datos
+
 const requireOwnership = (req, res, next) => {
   try {
     if (!req.user) {
@@ -61,12 +61,12 @@ const requireOwnership = (req, res, next) => {
 
     const userId = req.params.id
 
-    // Los administradores pueden acceder a cualquier recurso
+    
     if (req.user.role === "admin") {
       return next()
     }
 
-    // Los usuarios solo pueden acceder a sus propios datos
+    
     if (req.user._id.toString() !== userId) {
       return res.status(403).json({
         status: "error",
@@ -84,13 +84,13 @@ const requireOwnership = (req, res, next) => {
   }
 }
 
-// Middleware opcional para verificar si el usuario está autenticado (no obligatorio)
+
 const optionalAuth = (req, res, next) => {
   passport.authenticate("jwt", { session: false }, (err, user, info) => {
     if (user) {
       req.user = user
     }
-    // Continúa sin importar si hay usuario o no
+    
     next()
   })(req, res, next)
 }

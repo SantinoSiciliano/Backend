@@ -6,7 +6,6 @@ class CartModel {
     this.collection = "carts"
   }
 
-  // Crear un nuevo carrito
   async createCart(userId = null) {
     const db = getDb()
     const newCart = {
@@ -20,7 +19,6 @@ class CartModel {
     return { ...newCart, _id: result.insertedId }
   }
 
-  // Buscar carrito por ID
   async findById(id) {
     const db = getDb()
     try {
@@ -33,7 +31,6 @@ class CartModel {
     }
   }
 
-  // Buscar carrito por ID de usuario
   async findByUserId(userId) {
     const db = getDb()
     try {
@@ -46,7 +43,6 @@ class CartModel {
     }
   }
 
-  // Eliminar carrito
   async deleteCart(id) {
     const db = getDb()
     try {

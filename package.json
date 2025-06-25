@@ -18,7 +18,7 @@
     "crud",
     "passport"
   ],
-  "author": "Santino Siciliano",
+  "author": "",
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^6.0.0",

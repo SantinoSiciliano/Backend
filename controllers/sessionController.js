@@ -3,7 +3,7 @@ const passport = require("passport")
 const cartModel = require("../models/cartModel")
 
 class SessionController {
-  // Login usando Passport Local Strategy
+ 
   async login(req, res, next) {
     passport.authenticate("local", { session: false }, async (err, user, info) => {
       if (err) {
@@ -21,13 +21,13 @@ class SessionController {
       }
 
       try {
-        // Buscar o crear carrito si no existe
+        
         let cart = await cartModel.findByUserId(user._id)
         if (!cart) {
           cart = await cartModel.createCart(user._id)
         }
 
-        // Generar JWT
+        
         const token = jwt.sign(
           {
             id: user._id,
@@ -62,13 +62,12 @@ class SessionController {
     })(req, res, next)
   }
 
-  // Validar usuario actual (ruta /current) - REQUERIDO POR LA CONSIGNA
+  
   async current(req, res) {
     try {
-      // El usuario ya está disponible gracias al middleware de autenticación con Passport
+      
       const user = req.user
 
-      // Buscar carrito del usuario
       const cart = await cartModel.findByUserId(user._id)
 
       res.json({
@@ -92,11 +91,10 @@ class SessionController {
     }
   }
 
-  // Logout
+  
   async logout(req, res) {
     try {
-      // En JWT no necesitamos hacer nada en el servidor para logout
-      // El cliente debe eliminar el token
+      
       res.json({
         status: "success",
         message: "Logout exitoso. Elimina el token del cliente.",
@@ -110,12 +108,11 @@ class SessionController {
     }
   }
 
-  // Refresh token (opcional)
   async refreshToken(req, res) {
     try {
       const user = req.user
 
-      // Generar nuevo token
+      
       const newToken = jwt.sign(
         {
           id: user._id,

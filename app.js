@@ -6,24 +6,23 @@ require("dotenv").config()
 
 const app = express()
 
-// Configurar Handlebars
 app.engine("handlebars", engine())
 app.set("view engine", "handlebars")
 app.set("views", "./views")
 
-// Middlewares
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
-// Rutas para vistas web
+
 app.use("/", require("./routes/views"))
 
-// Rutas API
+
 app.use("/api/users", require("./routes/users"))
 app.use("/api/sessions", require("./routes/sessions"))
 
-// Manejo de errores
+
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).json({
@@ -32,12 +31,12 @@ app.use((err, req, res, next) => {
   })
 })
 
-// Iniciar servidor
+
 const PORT = process.env.PORT || 3000
 
 async function startServer() {
   try {
-    // Conectar a MongoDB Atlas
+    
     await connectToDatabase()
 
     app.listen(PORT, () => {
@@ -46,7 +45,7 @@ async function startServer() {
       console.log(`API disponible en: http://localhost:${PORT}/api`)
     })
 
-    // Manejar cierre de la aplicación
+    
     process.on("SIGINT", async () => {
       await client.close()
       console.log("Conexión a MongoDB cerrada")
