@@ -6,6 +6,7 @@ require("dotenv").config()
 
 const app = express()
 
+
 app.engine("handlebars", engine())
 app.set("view engine", "handlebars")
 app.set("views", "./views")
@@ -21,6 +22,18 @@ app.use("/", require("./routes/views"))
 
 app.use("/api/users", require("./routes/users"))
 app.use("/api/sessions", require("./routes/sessions"))
+app.use("/api/carts", require("./routes/carts"))
+app.use("/api/products", require("./routes/products"))
+app.use("/api/tickets", require("./routes/tickets")) 
+
+
+app.get("/api/test", (req, res) => {
+  res.json({
+    status: "success",
+    message: "API funcionando correctamente",
+    timestamp: new Date().toISOString(),
+  })
+})
 
 
 app.use((err, req, res, next) => {
@@ -43,9 +56,10 @@ async function startServer() {
       console.log(`Servidor corriendo en puerto ${PORT}`)
       console.log(`Interfaz web disponible en: http://localhost:${PORT}`)
       console.log(`API disponible en: http://localhost:${PORT}/api`)
+      console.log(`Ruta de prueba: http://localhost:${PORT}/api/test`)
     })
 
-    
+   
     process.on("SIGINT", async () => {
       await client.close()
       console.log("Conexión a MongoDB cerrada")

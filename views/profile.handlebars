@@ -1,11 +1,12 @@
 <h3>Personal Information</h3>
 
 <div class="user-info">
-    <p>Name: {{user.first_name}} {{user.last_name}}</p>
-    <p>Age: {{user.age}}</p>
-    <p>Role: {{user.role}}</p>
+  <p>Name: {{user.first_name}} {{user.last_name}}</p>
+  <p>Age: {{user.age}}</p>
+  <p>Role: {{user.role}}</p>
 </div>
 
-<form method="POST" action="/api/sessions/logout">
-    <input type="submit" value="Logout" />
+<form method="POST" action="/logout">
+  <input type="submit" value="Logout" />
 </form>
+

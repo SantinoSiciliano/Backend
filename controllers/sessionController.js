@@ -1,141 +1,74 @@
-const jwt = require("jsonwebtoken")
-const passport = require("passport")
-const cartModel = require("../models/cartModel")
+const userService = require("../services/userService")
+const cartService = require("../services/cartService")
+const { UserDTO } = require("../dto/userDTO")
 
 class SessionController {
- 
-  async login(req, res, next) {
-    passport.authenticate("local", { session: false }, async (err, user, info) => {
-      if (err) {
-        return res.status(500).json({
-          status: "error",
-          message: err.message,
-        })
-      }
+  async login(req, res) {
+    try {
+      const { email, password } = req.body
 
-      if (!user) {
-        return res.status(401).json({
-          status: "error",
-          message: info.message || "Credenciales inválidas",
-        })
-      }
+      const user = await userService.authenticateUser(email, password)
+      const token = await userService.generateJWT(user)
 
-      try {
-        
-        let cart = await cartModel.findByUserId(user._id)
-        if (!cart) {
-          cart = await cartModel.createCart(user._id)
-        }
+      
+      const cart = await cartService.getCartByUserId(user._id)
 
-        
-        const token = jwt.sign(
-          {
-            id: user._id,
-            email: user.email,
-            role: user.role,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "24h" },
-        )
+      const userDTO = new UserDTO(user)
 
-        res.json({
-          status: "success",
-          message: "Login exitoso",
-          token,
-          user: {
-            id: user._id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            age: user.age,
-            role: user.role,
-            cart: cart._id,
-          },
-        })
-      } catch (error) {
-        console.error("Error en login:", error)
-        res.status(500).json({
-          status: "error",
-          message: error.message || "Error interno del servidor",
-        })
-      }
-    })(req, res, next)
+      
+      res.cookie("token", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }) 
+
+      res.json({
+        status: "success",
+        message: "Login exitoso",
+        token, 
+        user: {
+          ...userDTO,
+          cart: cart || null, 
+        },
+      })
+    } catch (error) {
+      res.status(401).json({
+        status: "error",
+        message: error.message,
+      })
+    }
   }
 
-  
   async current(req, res) {
     try {
-      
       const user = req.user
-
-      const cart = await cartModel.findByUserId(user._id)
+      const cart = await cartService.getCartByUserId(user._id)
+      const userDTO = new UserDTO(user)
 
       res.json({
         status: "success",
         user: {
-          id: user._id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          age: user.age,
-          role: user.role,
+          ...userDTO,
           cart: cart || null,
         },
       })
     } catch (error) {
-      console.error("Error al obtener usuario actual:", error)
       res.status(500).json({
         status: "error",
-        message: error.message || "Error interno del servidor",
+        message: error.message,
       })
     }
   }
 
-  
   async logout(req, res) {
-    try {
-      
-      res.json({
-        status: "success",
-        message: "Logout exitoso. Elimina el token del cliente.",
-      })
-    } catch (error) {
-      console.error("Error en logout:", error)
-      res.status(500).json({
-        status: "error",
-        message: error.message || "Error interno del servidor",
-      })
-    }
-  }
+    
+    res.clearCookie("token")
 
-  async refreshToken(req, res) {
-    try {
-      const user = req.user
-
-      
-      const newToken = jwt.sign(
-        {
-          id: user._id,
-          email: user.email,
-          role: user.role,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "24h" },
-      )
-
-      res.json({
-        status: "success",
-        message: "Token renovado exitosamente",
-        token: newToken,
-      })
-    } catch (error) {
-      console.error("Error al renovar token:", error)
-      res.status(500).json({
-        status: "error",
-        message: error.message || "Error interno del servidor",
-      })
-    }
+    res.json({
+      status: "success",
+      message: "Logout exitoso",
+    })
   }
 }
 
 module.exports = new SessionController()
+
+
+
+

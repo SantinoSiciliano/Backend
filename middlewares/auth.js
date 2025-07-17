@@ -1,103 +1,96 @@
-const passport = require("passport")
+const jwt = require("jsonwebtoken")
+const userService = require("../services/userService")
 
 
-const authenticateJWT = (req, res, next) => {
-  passport.authenticate("jwt", { session: false }, (err, user, info) => {
-    if (err) {
-      return res.status(500).json({
+const authenticateJWT = async (req, res, next) => {
+  try {
+    let token = req.cookies.token 
+
+    if (!token) {
+      
+      const authHeader = req.headers.authorization
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1]
+      }
+    }
+
+    if (!token) {
+      return res.status(401).json({
         status: "error",
-        message: "Error de autenticación",
+        message: "Token no proporcionado",
       })
     }
 
-    if (!user) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      const user = await userService.getUserById(decoded.id)
+
+      if (!user) {
+        return res.status(401).json({
+          status: "error",
+          message: "Usuario no encontrado o token inválido",
+        })
+      }
+
+      req.user = user
+      next()
+    } catch (error) {
+      
+      res.clearCookie("token")
       return res.status(401).json({
         status: "error",
         message: "Token inválido o expirado",
       })
     }
-
-    req.user = user
-    next()
-  })(req, res, next)
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    })
+  }
 }
 
 
 const requireAdmin = (req, res, next) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        status: "error",
-        message: "Usuario no autenticado",
-      })
-    }
-
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        status: "error",
-        message: "Acceso denegado. Se requieren permisos de administrador",
-      })
-    }
-
-    next()
-  } catch (error) {
-    console.error("Error en verificación de admin:", error)
-    res.status(500).json({
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
       status: "error",
-      message: "Error interno del servidor",
+      message: "Acceso denegado. Se requieren permisos de administrador",
     })
   }
+  next()
+}
+
+
+const requireUser = (req, res, next) => {
+  if (req.user.role !== "user") {
+    return res.status(403).json({
+      status: "error",
+      message: "Acceso denegado. Solo usuarios pueden realizar esta acción",
+    })
+  }
+  next()
 }
 
 
 const requireOwnership = (req, res, next) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        status: "error",
-        message: "Usuario no autenticado",
-      })
-    }
+  const userId = req.params.id || req.params.userId
 
-    const userId = req.params.id
-
-    
-    if (req.user.role === "admin") {
-      return next()
-    }
-
-    
-    if (req.user._id.toString() !== userId) {
-      return res.status(403).json({
-        status: "error",
-        message: "Acceso denegado. Solo puedes acceder a tus propios datos",
-      })
-    }
-
-    next()
-  } catch (error) {
-    console.error("Error en verificación de propiedad:", error)
-    res.status(500).json({
+  if (req.user.role !== "admin" && req.user._id.toString() !== userId) {
+    return res.status(403).json({
       status: "error",
-      message: "Error interno del servidor",
+      message: "Acceso denegado. Solo puedes acceder a tus propios datos",
     })
   }
-}
-
-
-const optionalAuth = (req, res, next) => {
-  passport.authenticate("jwt", { session: false }, (err, user, info) => {
-    if (user) {
-      req.user = user
-    }
-    
-    next()
-  })(req, res, next)
+  next()
 }
 
 module.exports = {
   authenticateJWT,
   requireAdmin,
+  requireUser,
   requireOwnership,
-  optionalAuth,
 }
+
+
+

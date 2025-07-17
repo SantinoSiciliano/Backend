@@ -1,15 +1,18 @@
-<form method="POST" action="/api/sessions/login">
-    <label>
-        Email:
-        <input type="email" name="email" placeholder="example@mail.com" value="" required />
-    </label>
-    <br />
-    <label>
-        Password:
-        <input type="password" name="password" placeholder="**********" value="" required />
-    </label>
-    <br />
-    <input type="submit" value="Login" />
+<form method="POST" action="/login">
+  <label>
+      Email:
+      <input type="email" name="email" placeholder="example@mail.com" value="" required />
+  </label>
+  <br />
+  <label>
+      Password:
+      <input type="password" name="password" placeholder="**********" value="" required />
+  </label>
+  <br />
+  <input type="submit" value="Login" />
 </form>
 
 <p>Not account? <a href="/register">Register!</a></p>
+<p><a href="/forgot-password">¿Olvidaste tu contraseña?</a></p>
+
+

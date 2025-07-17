@@ -1,31 +1,16 @@
 const express = require("express")
 const router = express.Router()
-const cartModel = require("../models/cartModel")
-const { authenticateJWT, requireOwnership } = require("../middlewares/auth")
+const cartController = require("../controllers/cartController")
+const { authenticateJWT, requireUser, requireOwnership } = require("../middlewares/auth")
 
-router.get("/user/:userId", authenticateJWT, requireOwnership, async (req, res) => {
-  try {
-    const { userId } = req.params
-    const cart = await cartModel.findByUserId(userId)
+router.use(authenticateJWT)
 
-    if (!cart) {
-      return res.status(404).json({
-        status: "error",
-        message: "Carrito no encontrado",
-      })
-    }
 
-    res.json({
-      status: "success",
-      cart,
-    })
-  } catch (error) {
-    console.error("Error al obtener carrito:", error)
-    res.status(500).json({
-      status: "error",
-      message: error.message || "Error interno del servidor",
-    })
-  }
-})
+router.get("/user/:userId", requireOwnership, cartController.getCartByUserId)
+
+
+router.post("/:cartId/products", requireUser, cartController.addProductToCart)
+router.delete("/:cartId/products/:productId", requireUser, cartController.removeProductFromCart)
+router.delete("/:cartId", requireUser, cartController.clearCart)
 
 module.exports = router

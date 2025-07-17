@@ -1,199 +1,126 @@
-const userModel = require("../models/userModel")
-const cartModel = require("../models/cartModel")
+const userService = require("../services/userService")
+const { UserDTO, UserCreateDTO, UserUpdateDTO } = require("../dto/userDTO")
 
 class UserController {
-  
   async createUser(req, res) {
     try {
-      const { first_name, last_name, email, age, password, role } = req.body
-
-      
-      if (!first_name || !last_name || !email || !age || !password) {
-        return res.status(400).json({
-          status: "error",
-          message: "Todos los campos son requeridos: first_name, last_name, email, age, password",
-        })
-      }
-
-      const existingUser = await userModel.findByEmail(email)
-      if (existingUser) {
-        return res.status(400).json({
-          status: "error",
-          message: "El usuario con este email ya existe",
-        })
-      }
-
-      const newUser = await userModel.createUser({
-        first_name,
-        last_name,
-        email,
-        age,
-        password,
-        role,
-      })
-
-      const newCart = await cartModel.createCart(newUser._id)
+      const userCreateDTO = new UserCreateDTO(req.body)
+      const newUser = await userService.createUser(userCreateDTO)
+      const userDTO = new UserDTO(newUser)
 
       res.status(201).json({
         status: "success",
         message: "Usuario creado exitosamente",
-        user: {
-          id: newUser._id,
-          first_name: newUser.first_name,
-          last_name: newUser.last_name,
-          email: newUser.email,
-          age: newUser.age,
-          role: newUser.role,
-          cart: newCart._id,
-          createdAt: newUser.createdAt,
-        },
+        user: userDTO,
       })
     } catch (error) {
-      console.error("Error al crear usuario:", error)
-      res.status(500).json({
+      res.status(400).json({
         status: "error",
-        message: error.message || "Error interno del servidor",
+        message: error.message,
       })
     }
   }
 
   async getUsers(req, res) {
     try {
-      const users = await userModel.findAll()
+      const users = await userService.getAllUsers()
+      const usersDTO = users.map((user) => new UserDTO(user))
 
       res.json({
         status: "success",
-        count: users.length,
-        users,
+        users: usersDTO,
       })
     } catch (error) {
-      console.error("Error al obtener usuarios:", error)
       res.status(500).json({
         status: "error",
-        message: error.message || "Error interno del servidor",
+        message: error.message,
       })
     }
   }
 
   async getUserById(req, res) {
     try {
-      const { id } = req.params
-
-      const user = await userModel.findById(id)
-
-      if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "Usuario no encontrado",
-        })
-      }
-
-     
-      const cart = await cartModel.findByUserId(id)
-
-      const { password, ...safeUser } = user
+      const user = await userService.getUserById(req.params.id)
+      const userDTO = new UserDTO(user)
 
       res.json({
         status: "success",
-        user: {
-          ...safeUser,
-          cart: cart || null,
-        },
+        user: userDTO,
       })
     } catch (error) {
-      console.error("Error al obtener usuario:", error)
-      res.status(500).json({
+      res.status(404).json({
         status: "error",
-        message: error.message || "Error interno del servidor",
+        message: error.message,
       })
     }
   }
 
   async updateUser(req, res) {
     try {
-      const { id } = req.params
-      const { first_name, last_name, email, age } = req.body
-
-      const existingUser = await userModel.findById(id)
-      if (!existingUser) {
-        return res.status(404).json({
-          status: "error",
-          message: "Usuario no encontrado",
-        })
-      }
-
-      
-      const updated = await userModel.updateUser(id, {
-        first_name,
-        last_name,
-        email,
-        age,
-      })
-
-      if (!updated) {
-        return res.status(400).json({
-          status: "error",
-          message: "No se pudo actualizar el usuario",
-        })
-      }
-
-      
-      const updatedUser = await userModel.findById(id)
-      const { password, ...safeUser } = updatedUser
+      const userUpdateDTO = new UserUpdateDTO(req.body)
+      const updatedUser = await userService.updateUser(req.params.id, userUpdateDTO)
+      const userDTO = new UserDTO(updatedUser)
 
       res.json({
         status: "success",
         message: "Usuario actualizado exitosamente",
-        user: safeUser,
+        user: userDTO,
       })
     } catch (error) {
-      console.error("Error al actualizar usuario:", error)
-      res.status(500).json({
+      res.status(404).json({
         status: "error",
-        message: error.message || "Error interno del servidor",
+        message: error.message,
       })
     }
   }
 
-  
   async deleteUser(req, res) {
     try {
-      const { id } = req.params
-
-      
-      const user = await userModel.findById(id)
-      if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "Usuario no encontrado",
-        })
-      }
-
-      
-      const cart = await cartModel.findByUserId(id)
-      if (cart) {
-        await cartModel.deleteCart(cart._id)
-      }
-
-      
-      const deleted = await userModel.deleteUser(id)
-
-      if (!deleted) {
-        return res.status(400).json({
-          status: "error",
-          message: "No se pudo eliminar el usuario",
-        })
-      }
+      await userService.deleteUser(req.params.id)
 
       res.json({
         status: "success",
-        message: "Usuario y carrito asociado eliminados exitosamente",
+        message: "Usuario eliminado exitosamente",
       })
     } catch (error) {
-      console.error("Error al eliminar usuario:", error)
-      res.status(500).json({
+      res.status(404).json({
         status: "error",
-        message: error.message || "Error interno del servidor",
+        message: error.message,
+      })
+    }
+  }
+
+  async requestPasswordReset(req, res) {
+    try {
+      const { email } = req.body
+      const result = await userService.requestPasswordReset(email)
+
+      res.json({
+        status: "success",
+        message: result.message,
+      })
+    } catch (error) {
+      res.status(404).json({
+        status: "error",
+        message: error.message,
+      })
+    }
+  }
+
+  async resetPassword(req, res) {
+    try {
+      const { token } = req.params
+      const { password } = req.body
+      const result = await userService.resetPassword(token, password)
+
+      res.json({
+        status: "success",
+        message: result.message,
+      })
+    } catch (error) {
+      res.status(400).json({
+        status: "error",
+        message: error.message,
       })
     }
   }

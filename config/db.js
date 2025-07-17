@@ -8,15 +8,15 @@ let db
 async function connectToDatabase() {
   try {
     await client.connect()
-    console.log("✅ Conectado exitosamente a MongoDB Atlas")
+    console.log(" Conectado exitosamente a MongoDB Atlas")
     db = client.db("ecommerce")
 
     await db.collection("users").createIndex({ email: 1 }, { unique: true })
-    console.log("✅ Índices creados correctamente")
+    console.log(" Índices creados correctamente")
 
     return db
   } catch (error) {
-    console.error("❌ Error al conectar a MongoDB:", error)
+    console.error(" Error al conectar a MongoDB:", error)
     process.exit(1)
   }
 }
@@ -31,9 +31,9 @@ function getDb() {
 async function closeConnection() {
   try {
     await client.close()
-    console.log("✅ Conexión a MongoDB cerrada correctamente")
+    console.log(" Conexión a MongoDB cerrada correctamente")
   } catch (error) {
-    console.error("❌ Error al cerrar la conexión:", error)
+    console.error(" Error al cerrar la conexión:", error)
   }
 }
 
